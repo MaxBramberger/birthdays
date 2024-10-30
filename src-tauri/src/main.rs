@@ -2,12 +2,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod db;
+
+use rusqlite::params;
 use serde::{Serialize};
 use crate::db::initialize_database;
 
 fn main() {
   tauri::Builder::default()
-      .invoke_handler(tauri::generate_handler![get_birthdays])
+      .invoke_handler(tauri::generate_handler![get_birthdays, add_birthday, update_birthday, delete_birthday])
       .run(tauri::generate_context!())
       .expect("error while running Tauri application");
 }
@@ -49,4 +51,46 @@ fn get_birthdays() -> Result<Vec<Birthday>, String> {
       .collect();
 
   Ok(birthdays)
+}
+
+#[tauri::command]
+fn add_birthday(first_name: String, last_name: String, birthday: String) -> Result<(), String> {
+  // Connect to the SQLite database
+  let conn = initialize_database().map_err(|e| format!("Failed to connect to database: {}", e))?;
+
+  // Insert the new birthday entry into the table
+  conn.execute(
+    "INSERT INTO birthdays (first_name, last_name, birthday) VALUES (?1, ?2, ?3)",
+    params![first_name, last_name, birthday],
+  ).map_err(|e| format!("Failed to insert birthday: {}", e))?;
+
+  Ok(())
+}
+
+#[tauri::command]
+fn update_birthday(first_name: String, last_name: String, birthday: String, id: i32) -> Result<(), String> {
+  // Connect to the SQLite database
+  let conn = initialize_database().map_err(|e| format!("Failed to connect to database: {}", e))?;
+
+  // Insert the new birthday entry into the table
+  conn.execute(
+    "UPDATE birthdays SET first_name = ?1, last_name = ?2, birthday = ?3 WHERE id = ?4",
+    params![first_name, last_name, birthday, id],
+  ).map_err(|e| format!("Failed to update birthday: {}", e))?;
+
+  Ok(())
+}
+
+#[tauri::command]
+fn delete_birthday(id: i32) -> Result<(), String> {
+  // Connect to the SQLite database
+  let conn = initialize_database().map_err(|e| format!("Failed to connect to database: {}", e))?;
+
+  // Insert the new birthday entry into the table
+  conn.execute(
+    "DELETE FROM birthdays WHERE id = ?1",
+    params![id],
+  ).map_err(|e| format!("Failed to update birthday: {}", e))?;
+
+  Ok(())
 }

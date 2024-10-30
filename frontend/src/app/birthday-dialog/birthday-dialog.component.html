@@ -1,0 +1,25 @@
+<mat-card>
+    <mat-card-content>
+        <div class="container">
+        <mat-form-field class="input">
+            <input matInput [(ngModel)]="first_name" placeholder="First Name">
+        </mat-form-field>
+        <mat-form-field class="input">
+            <input matInput [(ngModel)]="last_name" placeholder="Last Name">
+        </mat-form-field>
+        <mat-form-field class="input">
+            <input matInput [matDatepicker]="picker" [(ngModel)]="birthdayMomentPrivate" placeholder="Birthday">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker startView="multi-year" startAt="1990"></mat-datepicker>
+        </mat-form-field>
+        </div>
+    </mat-card-content>
+    <mat-card-actions>
+        <button mat-icon-button [disabled]="!isFormValid()" (click)="confirm()"><mat-icon>
+            check
+        </mat-icon></button>
+        <button mat-icon-button (click)="cancel()"><mat-icon>
+            close
+        </mat-icon></button>
+    </mat-card-actions>
+</mat-card>

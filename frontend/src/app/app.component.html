@@ -1,2 +1,10 @@
-<h1 class="title"> Birthday DB</h1>
-<app-birthday-table></app-birthday-table>
+<h1 class="title"> Birthday DB
+    <button mat-icon-button (click)="onAdd()">
+        <mat-icon>add</mat-icon>
+    </button>
+</h1>
+<mat-form-field>
+    <mat-label class="search-label"> Search <mat-icon>search</mat-icon> </mat-label>
+    <input matInput [(ngModel)]="filterString">
+</mat-form-field>
+<app-birthday-table [filterString]="filterString"></app-birthday-table>
