@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {BehaviorSubject, firstValueFrom, from, Observable} from "rxjs";
+import {BehaviorSubject, from } from "rxjs";
 import {Birthday} from "../birthday-table/birthday-table.component";
 import {invoke} from "@tauri-apps/api/core";
 

@@ -4,20 +4,17 @@ import {MatFormField, MatFormFieldModule} from "@angular/material/form-field";
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogRef} from "@angular/material/dialog";
 import {Birthday} from "../birthday-table/birthday-table.component";
 import {FormsModule} from "@angular/forms";
-import {MatDatepicker, MatDatepickerModule} from "@angular/material/datepicker";
+import { MatDatepickerModule} from "@angular/material/datepicker";
 import {MomentDateAdapter } from "@angular/material-moment-adapter";
 import {
   DateAdapter,
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE,
   MatNativeDateModule,
-  provideNativeDateAdapter
 } from "@angular/material/core";
-import {MatInput, MatInputModule} from "@angular/material/input";
+import {MatInputModule} from "@angular/material/input";
 import {MatButton, MatIconButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
-import {invoke} from "@tauri-apps/api/core";
-import {from} from "rxjs";
 import {BirthdayService} from "../service/birthday.service";
 
 const MY_DATE_FORMATS = {

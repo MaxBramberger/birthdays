@@ -23,6 +23,6 @@ export class AppComponent{
   constructor(private dialog: MatDialog) {
   }
   onAdd(){
-    const dialogRef = this.dialog.open(BirthdayDialogComponent, {data: undefined});
+    this.dialog.open(BirthdayDialogComponent, {data: undefined});
   }
 }
