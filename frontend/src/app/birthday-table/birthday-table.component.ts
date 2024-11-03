@@ -4,12 +4,17 @@ import {
   MatCellDef,
   MatColumnDef,
   MatHeaderCell,
-  MatHeaderCellDef, MatHeaderRow, MatHeaderRowDef, MatRow, MatRowDef,
-  MatTable, MatTableDataSource,
+  MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRow,
+  MatRowDef,
+  MatTable,
+  MatTableDataSource,
   MatTableModule
 } from '@angular/material/table';
 import {MatSort, MatSortHeader, MatSortModule} from "@angular/material/sort";
-import {BirthdayService} from "../service/birthday.service";
+import {BirthdayService, getDayMonthYearFromBirthdayString} from "../service/birthday.service";
 import {MatIconButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
 import {MatDialog} from "@angular/material/dialog";
@@ -20,6 +25,32 @@ export interface Birthday {
   first_name: string,
   last_name: string,
   birthday: string,
+}
+
+interface FilterObject{
+  showAll: 'showAll' | 'showClose';
+  filterString: string | null;
+}
+
+// returns true if date has identical month than today or if the date distance is smaller equal 14 days
+function dateModuloFilter(a: Birthday){
+  const today = new Date()
+
+  const dayMonthYear =getDayMonthYearFromBirthdayString(a.birthday);
+  const monthDiff = dayMonthYear.month - today.getMonth() - 1;
+
+  if(Math.abs(monthDiff) > 1){
+    return false;
+  } else if (monthDiff > 0){
+    const dayDistance = dayMonthYear.day + 31 - today.getDay();
+    return dayDistance <= 7;
+  } else if (monthDiff < 0){
+      const dayDistance = today.getDay() + 31 - dayMonthYear.day
+      return dayDistance <= 7;
+  } else {
+    return true;
+  }
+
 }
 
 @Component({
@@ -50,21 +81,34 @@ export class BirthdayTableComponent implements AfterViewInit, OnChanges {
   displayedColumns = ["first_name", "last_name", "birthday", "edit", "delete"];
   dataSource= new MatTableDataSource<Birthday>()
 
-  @Input() filterString: string | null = null
+  @Input() filterString: string | null = null;
+  @Input() showAll: 'showAll' | 'showClose' = 'showClose';
 
   @ViewChild(MatSort) sort!: MatSort;
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
+    this.setDataSourceSortingAccessor();
     this.dataSource.filterPredicate = (data: Birthday, filterString: string) => {
+      const filterObject : FilterObject = JSON.parse(filterString);
       const compareString = `${data.first_name} ${data.last_name}`.toLowerCase()
-      return compareString.includes(filterString.toLowerCase())
+      const filterStringOk = filterObject.filterString ? compareString.includes(filterObject.filterString.toLowerCase()): true
+      if(filterObject.showAll == 'showAll'){
+        return filterStringOk;
+      } else {
+        return dateModuloFilter(data) && filterStringOk;
+      }
     }
+    const filterObject: FilterObject = {
+      filterString: this.filterString === null ? '' : this.filterString, showAll: this.showAll
+    }
+    this.dataSource.filter = JSON.stringify(filterObject)
   }
 
   constructor(private birthdayService: BirthdayService, private dialog: MatDialog) {
     this.birthdayService.getBirthdayTable$().subscribe( birthdays => {
       this.dataSource.data = birthdays;
+      this.dataSource.filter
     })
   }
 
@@ -77,8 +121,23 @@ export class BirthdayTableComponent implements AfterViewInit, OnChanges {
   }
 
   ngOnChanges(_: SimpleChanges) {
-    if(this.filterString!=null){
-      this.dataSource.filter = this.filterString
+      const filterObject: FilterObject = {
+        filterString: this.filterString === null ? '' : this.filterString, showAll: this.showAll
+      }
+      this.dataSource.filter = JSON.stringify(filterObject)
+  }
+
+  setDataSourceSortingAccessor(){
+    this.dataSource.sortingDataAccessor = (row: Birthday, sortHeaderId) => {
+      if(sortHeaderId === 'first_name'  || sortHeaderId === 'last_name'){
+        return row[sortHeaderId]
+      } else if (sortHeaderId === 'birthday') {
+        const dayMonthYear = getDayMonthYearFromBirthdayString(row.birthday);
+        return  dayMonthYear.day + 100*dayMonthYear.month;
+      }
+      else {
+        return '';
+      }
     }
   }
 }

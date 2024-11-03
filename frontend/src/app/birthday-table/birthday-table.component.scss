@@ -5,3 +5,12 @@ table {
 th.mat-sort-header-sorted {
   color: black;
 }
+
+:host{
+  width: 100%;
+  overflow: auto
+}
+
+.mat-mdc-row:hover .mat-mdc-cell {
+  background-color: #cfcdcd75;
+}

@@ -3,13 +3,23 @@
 
 mod db;
 
+use std::fs::File;
+use std::io::Write;
 use rusqlite::params;
 use serde::{Serialize};
 use crate::db::initialize_database;
 
 fn main() {
   tauri::Builder::default()
-      .invoke_handler(tauri::generate_handler![get_birthdays, add_birthday, update_birthday, delete_birthday])
+      .plugin(tauri_plugin_dialog::init())
+      .invoke_handler(tauri::generate_handler![
+        get_birthdays,
+        add_birthday,
+        update_birthday,
+        delete_birthday,
+        file_import,
+        file_export
+      ])
       .run(tauri::generate_context!())
       .expect("error while running Tauri application");
 }
@@ -104,15 +114,27 @@ fn delete_birthday(id: i32) -> Result<(), String> {
 #[tauri::command]
 fn file_import(parse_file_content: String) {
   let mut birthdays = Vec::new();
-  for line in parse_file_content.lines() {
-    let fields: Vec<&str> = line.split(',').collect();
-    if fields.len() == 3 {
-      birthdays.push(BirthdayIn {
-        first_name: fields[0].trim().to_string(),
-        last_name: fields[1].trim().to_string(),
-        birthday: fields[2].trim().to_string(),
-      });
+  let header = parse_file_content.lines().next().unwrap();
+  let columns: Vec<&str> = header.split(';').collect();
+  let mut first_name_index = -1;
+  let mut last_name_index = -1;
+  let mut birthday_index = -1;
+  for index in 0..columns.len() {
+    match columns[index].trim() {
+      "first_name" => first_name_index = index as i32,
+      "last_name" => last_name_index = index as i32,
+      "birthday" => birthday_index = index as i32,
+      _ => continue,
     }
+  }
+
+  for line in parse_file_content.lines().skip(1) {
+    let fields: Vec<&str> = line.split(';').collect();
+      birthdays.push(BirthdayIn {
+        first_name: fields[first_name_index as usize].trim().to_string(),
+        last_name: fields[last_name_index as usize].trim().to_string(),
+        birthday: fields[birthday_index as usize].trim().to_string(),
+      });
   }
   for birthday in birthdays {
     match add_birthday(birthday.first_name, birthday.last_name, birthday.birthday) {
@@ -120,4 +142,21 @@ fn file_import(parse_file_content: String) {
       Err(e) => println!("Failed to add birthday: {}", e),
     }
   }
+}
+
+#[tauri::command]
+fn file_export(file_path: String) -> Result<(), String> {
+  let birthdays =  match get_birthdays(){
+    Ok(b) => b,
+    Err(e) => panic!("Failed to get birthdays: {}", e),
+  };
+
+  let mut file = File::create(file_path).map_err(|e| e.to_string())?;
+  let header = format!("first_name; last_name; birthday\n");
+  file.write_all(header.as_bytes()).map_err(|e| e.to_string())?;
+  for birthday in birthdays {
+    let line = format!("{}; {}; {}\n", birthday.first_name, birthday.last_name, birthday.birthday);
+    file.write_all(line.as_bytes()).map_err(|e| e.to_string())?;
+  }
+  Ok(())
 }

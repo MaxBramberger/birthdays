@@ -1,16 +1,28 @@
 <div class="title-container">
     <div>
         <h1 class="title"> Birthday DB
-            <button mat-icon-button (click)="onAdd()">
+            <button mat-icon-button (click)="onAdd()" [disabled]="loading$ | async">
                 <mat-icon>add</mat-icon>
             </button>
         </h1>
     </div>
-    <button mat-raised-button color="primary">Import</button>
-    <input type="file" (change)="handleFileImport($event)" style="display: none" #fileInput />
+    <div class="import-export-container">
+        <button mat-raised-button color="primary" [disabled]="loading$ | async" (click)="onFileSelect()">Import</button>
+        <input type="file" (change)="handleFileImport($event)" style="display: none" #fileInput />
+        <button mat-raised-button color = "primary" (click)="onExport()" [disabled]="loading$ | async">Export</button>
+    </div>
 </div>
-<mat-form-field>
-    <mat-label class="search-label"> Search <mat-icon>search</mat-icon> </mat-label>
-    <input matInput [(ngModel)]="filterString">
-</mat-form-field>
-<app-birthday-table [filterString]="filterString"></app-birthday-table>
+<div class="filter-form">
+    <mat-form-field>
+        <mat-label class="search-label"> Search <mat-icon>search</mat-icon> </mat-label>
+        <input matInput [(ngModel)]="filterString">
+    </mat-form-field>
+    <mat-checkbox [(ngModel)]="showAllBirthdays" color="primary"> <label style="color: black">Show all</label> </mat-checkbox>
+</div>
+<div class="table-viewport">
+    @if( loading$ | async){
+        <mat-spinner color="primary"></mat-spinner>
+    } @else {
+        <app-birthday-table [filterString]="filterString" [showAll]="showAllBirthdays ? 'showAll' : 'showClose'"></app-birthday-table>
+    }
+</div>
