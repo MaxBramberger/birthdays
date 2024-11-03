@@ -22,6 +22,12 @@ struct Birthday {
   birthday: String,
 }
 
+struct BirthdayIn {
+  first_name: String,
+  last_name: String,
+  birthday: String,
+}
+
 #[tauri::command]
 fn get_birthdays() -> Result<Vec<Birthday>, String> {
   // Connect to the SQLite database
@@ -93,4 +99,25 @@ fn delete_birthday(id: i32) -> Result<(), String> {
   ).map_err(|e| format!("Failed to update birthday: {}", e))?;
 
   Ok(())
+}
+
+#[tauri::command]
+fn file_import(parse_file_content: String) {
+  let mut birthdays = Vec::new();
+  for line in parse_file_content.lines() {
+    let fields: Vec<&str> = line.split(',').collect();
+    if fields.len() == 3 {
+      birthdays.push(BirthdayIn {
+        first_name: fields[0].trim().to_string(),
+        last_name: fields[1].trim().to_string(),
+        birthday: fields[2].trim().to_string(),
+      });
+    }
+  }
+  for birthday in birthdays {
+    match add_birthday(birthday.first_name, birthday.last_name, birthday.birthday) {
+      Ok(_) => (),
+      Err(e) => println!("Failed to add birthday: {}", e),
+    }
+  }
 }

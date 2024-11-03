@@ -1,8 +1,14 @@
-<h1 class="title"> Birthday DB
-    <button mat-icon-button (click)="onAdd()">
-        <mat-icon>add</mat-icon>
-    </button>
-</h1>
+<div class="title-container">
+    <div>
+        <h1 class="title"> Birthday DB
+            <button mat-icon-button (click)="onAdd()">
+                <mat-icon>add</mat-icon>
+            </button>
+        </h1>
+    </div>
+    <button mat-raised-button color="primary">Import</button>
+    <input type="file" (change)="handleFileImport($event)" style="display: none" #fileInput />
+</div>
 <mat-form-field>
     <mat-label class="search-label"> Search <mat-icon>search</mat-icon> </mat-label>
     <input matInput [(ngModel)]="filterString">
