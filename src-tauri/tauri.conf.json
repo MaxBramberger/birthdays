@@ -2,9 +2,9 @@
   "$schema": "https://schema.tauri.app/config/2.0.0-rc",
   "productName": "Birthdays",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.max.birthdays",
   "build": {
-    "frontendDist": "../frontend/dist",
+    "frontendDist": "../frontend/dist/frontend/browser",
     "devUrl": "http://localhost:4200",
     "beforeDevCommand": "npm run start",
     "beforeBuildCommand": "npm run build"
